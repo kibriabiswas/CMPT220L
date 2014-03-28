@@ -155,7 +155,7 @@ public class Game {
 
         Item item8 = new Item(8,"Fishes");
         item8.setName("You can fish here but its too cold. ");
-        item8.setDesc("You leave by hitting Q);
+        item8.setDesc("You leave by hitting Q");
         item8.setItem(loc8);
 
         
