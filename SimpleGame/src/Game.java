@@ -151,7 +151,6 @@ public class Game {
         loc8.setName("Hudson");
         loc8.setDesc("You have a great view from here.");
         loc8.setNext("You can go only north or west.");
-        loc8.setNearestLagoon("Kole Lagoon");
 
         Item item8 = new Item(8,"Fishes");
         item8.setName("You can fish here but its too cold. ");
