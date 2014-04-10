@@ -1,21 +1,35 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Game {
 
     // Globals Variables 
-    public static final boolean DEBUGGING = true;   // Debugging
+	public static final boolean DEBUGGING = true;   // Debugging
     public static final int MAX_LOCALES = 8;        // Total number of of locations.
-    public static int currentLocale = 0;            // Location where the player starts. 
+    public static  ListLoc currentLocation = null;  // Location where the player starts. 
     public static String command;                   // What the player types as he or she plays the game.
     public static boolean stillPlaying = true;      // Controls the game loop.
     public static Locale[] locations;               // An uninitialized array.
-    public static int[][] nav;                     // An uninitialized array of type int int.
     public static int moves = 0;                    // Counter of the player's moves.
     public static int score = 0;                    // Players Scores
+    public static double token = 0;					// form of money in the game
     public static float achievement = 0;              // Players move ratios 
+    public static ShopList lm1 = new ShopList();     // Shop List Class linking 
     public static  Item [] playerItem;              // Player items that they can use
     public static  Item [] inventory= new Item[4];  // An array of items that the player took.
     public static int takenItem = 0;                // How many items you have
+    // Global Location Variables
+    public static ListLoc li0=null; 
+    public static ListLoc li1=null; 
+    public static ListLoc li2=null; 
+    public static ListLoc li3=null; 
+    public static ListLoc li4=null; 
+    public static ListLoc li5=null; 
+    public static ListLoc li6=null; 
+    public static ListLoc li7=null; 
+    public static ListLoc li8=null; 
+
 
     public static void main(String[] args) {
         if (DEBUGGING) {
@@ -33,7 +47,16 @@ public class Game {
             try {
                 int startLocation = Integer.parseInt(args[0]);
                 if (startLocation >= 0 && startLocation <= MAX_LOCALES) {
-                    currentLocale = startLocation;
+                    if (startLocation== 0) currentLocation = li0;
+                    if (startLocation== 1) currentLocation = li1;
+                    if (startLocation== 2) currentLocation = li2;
+                    if (startLocation== 3) currentLocation = li3;
+                    if (startLocation== 4) currentLocation = li4;
+                    if (startLocation== 5) currentLocation = li5;
+                    if (startLocation== 6) currentLocation = li6;
+                    if (startLocation== 7) currentLocation = li7;
+                    if (startLocation== 8) currentLocation = li8;
+                    
                 }
             } catch (NumberFormatException ex) {   
                 System.out.println("Not a valid starting point: " + args[0]);
@@ -63,12 +86,16 @@ public class Game {
 
 
         command = new String();
-        stillPlaying = true;   // TODO: Do we need this?
+        stillPlaying = true;   // 
+        
+     // Make the list manager.
+        lm1.setName("Magic Items");
+        lm1.setDesc("These are some of my favorite things.");
 
         //location instances of the Locale class and Inventory instances of the Item Class.
         Locale loc0 = new Locale(0);
-        loc0.setName("Dining");
-        loc0.setDesc("Dining Room");
+        loc0.setName("Location: Dorm Room");
+        loc0.setDesc("This is where the player lives. ");
         loc0.setNext("You can only go east or south."); // where user can move to from currentLocation.
 
         Item item0 = new Item(0, "MAP");
@@ -157,8 +184,9 @@ public class Game {
         item8.setDesc("You leave by hitting Q");
         item8.setItem(loc8);
 
+       
         
-        // play items 
+         // player items 
         playerItem = new Item[9];
         playerItem[0] = item0;  // Map
         playerItem[1] = item1; //Library
@@ -166,52 +194,156 @@ public class Game {
         playerItem[3] = item3; //Spoon
         playerItem[4] = item4; //Food
         playerItem[5] = item5;  // Jacket
-        playerItem[6] = item6;  //Boke
+        playerItem[6] = item6;  //Book
         playerItem[7] = item7;  //Burgers
         playerItem[8] = item8;  //Fishes
 
 
 
-        //location arrays 
-        locations = new Locale[9];
-        locations[0] = loc0; 
-        locations[1] = loc1; 
-        locations[2] = loc2; 
-        locations[3] = loc3; 
-        locations[4] = loc4; 
-        locations[5] = loc5; 
-        locations[6] = loc6; 
-        locations[7] = loc7; 
-        locations[8] = loc8; 
+        
+        
+        
+//location set up
+        li0= new ListLoc(loc0);
+        li1= new ListLoc(loc1);
+        li2= new ListLoc(loc2);
+        li3= new ListLoc(loc3);
+        li4= new ListLoc(loc4);
+        li5= new ListLoc(loc5);
+        li6= new ListLoc(loc6);
+        li7= new ListLoc(loc7);
+        li8= new ListLoc(loc8);
+      
+        //set up the links for navigation
+        
+        li0.setSouth(li3);
+        li0.setEast(li1);
+        
+        
+        li1.setSouth(li4);
+        li1.setWest(li0);
+        li1.setEast(li2);
+        
+        li2.setSouth(li5);
+        li2.setWest(li1);
+        
+        li3.setSouth(li6);
+        li3.setNorth(li0);
+        li3.setEast(li4);
+        
+        li4.setNorth(li1);
+        li4.setSouth(li7);
+        li4.setWest(li3);
+        li4.setEast(li5);
+        
+        li5.setNorth(li2);
+        li5.setSouth(li8);
+        li5.setWest(li4);
+        
+        li6.setNorth(li3);
+        li6.setEast(li7);
+        
+        li7.setNorth(li4);
+        li7.setWest(li6);
+        li7.setEast(li8);
+        
+        
+        li8.setNorth(li5);
+        li8.setEast(li7);
+        
+   
+      
+
+        if (currentLocation==null) currentLocation = li0; 
+
+        final String fileName = "magicitems.txt";
+        readMagicItemsFromFile(fileName, lm1);
+
+        // Display the list of items.
+        System.out.println(lm1.toString());
+        
+        
+    }
+    
+ // Private
+    //
+    private static ShopItem sequentialSearch(ShopList lm,
+                                             String target) {
+    	final String fileName = "magicitems.txt";
+        readMagicItemsFromFile(fileName, lm1);
+
+        ShopItem retVal = null;
+        System.out.println("Searching for " + target + ".");
+        int counter = 0;
+        ShopItem currentItem = new ShopItem();
+        currentItem = lm.getHead();
+        boolean isFound = false;
+        while ( (!isFound) && (currentItem != null) ) {
+            counter = counter +1;
+            if (currentItem.getName().equalsIgnoreCase(target)) {
+                // We found it!
+                isFound = true;
+                retVal = currentItem;
+                if (token>currentItem.getCost()) {
+                token = token-currentItem.getCost();
+                System.out.println("You have Purchased " + currentItem + "from the Magic Shop." + "You currently have" + token);	
+                }
+            } else {
+                // Keep looking.
+                currentItem = currentItem.getNext();
+            
+            }
+        }
+        if (isFound) {
+            System.out.println("Found " + target + " after " + counter + " comparisons.");
+            return  currentItem;
+        } else {
+            System.out.println("Could not find " + target + " in " + counter + " comparisons.");
+        }
+
+        return retVal;
+    }
 
 
-        //navigation matrix.
-        nav = new int[][]{
-                                  /* N   S   W   E */
-                                  /* 0   1   2   3 */
-            /* nav[0] for loc 0 */ {-1, 3, -1, 1},
-            /* nav[1] for loc 1 */ {-1, 4, 0, 2},
-            /* nav[2] for loc 2 */ {-1, 5, 1, -1},
-            /* nav[3] for loc 3 */ { 0, 6, -1, 4},
-            /* nav[4] for loc 4 */ { 1, 7, 3, 5},
-            /* nav[5] for loc 5 */ { 2, 8, 4, -1},
-            /* nav[6] for loc 6 */ { 3, -1, -1, 7},
-            /* nav[7] for loc 7 */ { 4, -1, 6, 8},
-            /* nav[8] for loc 8 */ { 5, -1, 7, -1},
-        };
+    private static void readMagicItemsFromFile(String fileName,
+                                               ShopList lm) {
+        File myFile = new File(fileName);
+        try {
+            Scanner input = new Scanner(myFile);
+            while (input.hasNext()) {
+                // Read a line from the file.
+                String itemName = input.nextLine();
+
+                // Construct a new list item and set its attributes.
+                ShopItem fileItem = new ShopItem();
+                fileItem.setName(itemName);
+                fileItem.setCost(Math.random() * 100);
+                fileItem.setNext(null); // Still redundant. Still safe.
+
+                // Add the newly constructed item to the list.
+                lm.add(fileItem);
+            }
+            // Close the file.
+            input.close();
+        } catch (FileNotFoundException ex) {
+            System.out.println("File not found. " + ex.toString());
+        }
     }
 
 
 
 
-    private static void updateDisplay() {
-        System.out.println(locations[currentLocale].getName());
-        System.out.println(locations[currentLocale].getDesc());
-        System.out.println(locations[currentLocale].getNext());
+      
 
-       if (!playerItem[currentLocale].getHasTaken()) {
-        System.out.println(playerItem[currentLocale].getName());
-        System.out.println(playerItem[currentLocale].getDesc());
+
+    private static void updateDisplay() {
+        System.out.println(currentLocation.getThisLocale().getName());
+        System.out.println(currentLocation.getThisLocale().getDesc());
+        System.out.println(currentLocation.getThisLocale().getNext());
+
+       if (!playerItem [currentLocation.getThisLocale().getId()].getHasTaken()) {
+        System.out.println(playerItem[currentLocation.getThisLocale().getId()].getName());
+        System.out.println(playerItem[currentLocation.getThisLocale().getId()].getDesc());
 
 
 
@@ -219,14 +351,14 @@ public class Game {
     }
 
     private static void getCommand() {
-        System.out.print("[" + moves + " moves, score " + score + "," + " achievement " + achievement + "] ");
+        System.out.print("[" + moves + " moves, score " + score + "," + " achievement " + achievement + " Token: " + token + "]");
         Scanner inputReader = new Scanner(System.in);
         command = inputReader.nextLine();  // command is global.
     }
 
     private static void navigate() {
-        final int INVALID = -1;
-        int dir = INVALID;  
+        final ListLoc INVALID = null;
+        int dir = -1;  
 
         if (command.equalsIgnoreCase("north") || command.equalsIgnoreCase("n")) {
             dir = 0;
@@ -253,24 +385,49 @@ public class Game {
 
         }; 
 
-        if (dir > -1) {   // This means a dir was set.
-            int newLocation = nav[currentLocale][dir];
+        if (dir > -1) {   // This means  set.
+
+        	ListLoc newLocation = null;
+        	if (dir==0) newLocation = currentLocation.getNorth();
+        	if (dir==1) newLocation = currentLocation.getSouth();
+        	if (dir==3) newLocation = currentLocation.getEast();
+        	if (dir==2) newLocation = currentLocation.getWest();
             if (newLocation == INVALID) {
                 System.out.println("You can't go that way.");
             } else {
-                currentLocale = newLocation;
+                currentLocation = newLocation;
                 moves = moves + 1;
-                if (!locations[currentLocale].getHasVisited())
+                if (!currentLocation.getThisLocale().getHasVisited())
                 {
                     score = score + 5;
-                    locations[currentLocale].setHasVisited(true);
+                    token = token + 20;
+                     currentLocation.getThisLocale().setHasVisited(true);
                 }
 
                 achievement = (float)score / moves;
 
+             // Ask player for an item.
+                if (currentLocation.getThisLocale().getId()==4){
+                	
+                
+                
+                Scanner inputReader = new Scanner(System.in);
+                System.out.print("What item would you like? ");
+                String targetItem = new String();
+                targetItem = inputReader.nextLine();
+                System.out.println();
+
+                ShopItem li = new ShopItem();
+                li = sequentialSearch(lm1, targetItem);
+                if (li != null) {
+                    System.out.println(li.toString());
+                }
+            }
+            }   
+                
             }
         }
-    }
+    
 
     private static void help() {
         System.out.println("The commands are as follows:");
@@ -282,27 +439,27 @@ public class Game {
     private static void map() {
 
 
-            if (playerItem[currentLocale].getHasTaken()) {
+            if (playerItem[currentLocation.getThisLocale().getId()].getHasTaken()) {
 
-            System.out.println("[" + locations[0].getName() + " ][" + locations[1].getName() + "][" + locations[2].getName() + "]    ");
-            System.out.println("[" + locations[3].getName() + "][" + locations[4].getName() + "][" + locations[5].getName() + "] ");
-            System.out.println("[" + locations[6].getName() + " ][" + locations[7].getName() + "][" + locations[8].getName() + "]       ");
+            System.out.println("[" + li0.getThisLocale().getName() + " ][" + li1.getThisLocale().getName() + "][" + li2.getThisLocale().getName() + "]    ");
+            System.out.println("[" + li3.getThisLocale().getName() + "][" + li4.getThisLocale().getName() + "][" + li5.getThisLocale().getName() + "] ");
+            System.out.println("[" + li6.getThisLocale().getName() + " ][" + li7.getThisLocale().getName() + "][" + li8.getThisLocale().getName() + "]       ");
 
-                playerItem[currentLocale].setHasTaken(true);
+                playerItem[currentLocation.getThisLocale().getId()].setHasTaken(true);
         }
       }
 
 
     private static void take() {
 
-              if (!playerItem[currentLocale].getHasTaken()) {
+              if (!playerItem[currentLocation.getThisLocale().getId()].getHasTaken()) {
 
-               System.out.println( playerItem[currentLocale].getName());
+               System.out.println( playerItem[currentLocation.getThisLocale().getId()].getName());
 
-                inventory[takenItem] = playerItem[currentLocale];
+                inventory[takenItem] = playerItem[currentLocation.getThisLocale().getId()];
                 takenItem = takenItem + 1;
 
-                  playerItem[currentLocale].setHasTaken(true);
+                  playerItem[currentLocation.getThisLocale().getId()].setHasTaken(true);
             }
         }
 
