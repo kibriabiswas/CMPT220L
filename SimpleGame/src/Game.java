@@ -18,7 +18,9 @@ public class Game {
     public static ShopList lm1 = new ShopList();     // Shop List Class linking 
     public static  Item [] playerItem;              // Player items that they can use
     public static  Item [] inventory= new Item[4];  // An array of items that the player took.
+    public static ShopItem [] ShopInventory = new ShopItem [600]; //Arrays to hold items at the magicshoppe
     public static int takenItem = 0;                // How many items you have
+    public static int takenMagicItem = 0;
     // Global Location Variables
     public static ListLoc li0=null; 
     public static ListLoc li1=null; 
@@ -94,7 +96,7 @@ public class Game {
 
         //location instances of the Locale class and Inventory instances of the Item Class.
         Locale loc0 = new Locale(0);
-        loc0.setName("Location: Dorm Room");
+        loc0.setName("Dorm Room");
         loc0.setDesc("This is where the player lives. ");
         loc0.setNext("You can only go east or south."); // where user can move to from currentLocation.
 
@@ -375,7 +377,7 @@ public class Game {
         } else if (command.equalsIgnoreCase("take") || command.equalsIgnoreCase("t")) {
             take();
         } else if (command.equalsIgnoreCase("inventory") || command.equalsIgnoreCase("i")) {
-            invt();
+            invt(); 
         } else if (command.equalsIgnoreCase("map") || command.equalsIgnoreCase("m")) {
             map();
         } else {
@@ -415,11 +417,28 @@ public class Game {
                 System.out.print("What item would you like? ");
                 String targetItem = new String();
                 targetItem = inputReader.nextLine();
+                
+                //TODO: You take what you you read from the console (targetItem)
+                //and create an Item Object which then you can add to your inventory.
+                
                 System.out.println();
 
                 ShopItem li = new ShopItem();
                 li = sequentialSearch(lm1, targetItem);
                 if (li != null) {
+                	int id = inventory.length;
+                	Item[] temp = new Item[id + 1];   
+                	
+                	for(int i = 0; i < inventory.length; i++){
+                		temp[i] = inventory[i];
+                	}
+                	
+                	Item newItem = new Item(id, targetItem);
+                	temp[id] = newItem;
+                	
+                	inventory = temp;
+                	
+                	
                     System.out.println(li.toString());
                 }
             }
@@ -433,45 +452,61 @@ public class Game {
         System.out.println("The commands are as follows:");
         System.out.println("   n/north");
         System.out.println("   s/south");
+        System.out.println("   e/east");
+        System.out.println("   w/west");
+        System.out.println("   m/map");
+        System.out.println("   i/inventory");
+        System.out.println("   t/take");
         System.out.println("   q/quit");
     }
 
     private static void map() {
 
 
-            if (playerItem[currentLocation.getThisLocale().getId()].getHasTaken()) {
+        int currentLocale = 0;
+		if (playerItem[currentLocale].getHasTaken()) {
 
-            System.out.println("[" + li0.getThisLocale().getName() + " ][" + li1.getThisLocale().getName() + "][" + li2.getThisLocale().getName() + "]    ");
-            System.out.println("[" + li3.getThisLocale().getName() + "][" + li4.getThisLocale().getName() + "][" + li5.getThisLocale().getName() + "] ");
-            System.out.println("[" + li6.getThisLocale().getName() + " ][" + li7.getThisLocale().getName() + "][" + li8.getThisLocale().getName() + "]       ");
+        System.out.println("[" + li0.getThisLocale().getName() + " ]-----[" + li1.getThisLocale().getName() + "]-------[" + li2.getThisLocale().getName() + "]    ");
+        System.out.println("      |              |              |     ");
+        System.out.println("      |              |              |        ");
+        System.out.println("[" + li3.getThisLocale().getName() + "]-----[" + li4.getThisLocale().getName() + "]-----[" + li5.getThisLocale().getName() + "] ");
+        System.out.println("      |              |              |               ");
+        System.out.println("      |              |              |        ");
+        System.out.println("[" + li6.getThisLocale().getName() + " ]-----[" + li7.getThisLocale().getName() + "]---------[" + li8.getThisLocale().getName() + "]       ");
 
-                playerItem[currentLocation.getThisLocale().getId()].setHasTaken(true);
-        }
-      }
+            playerItem[currentLocale].setHasTaken(true);
+    }
+  }
+      
 
 
     private static void take() {
 
+	  	Item itemToTake = playerItem[currentLocation.getThisLocale().getId()]; 
               if (!playerItem[currentLocation.getThisLocale().getId()].getHasTaken()) {
 
-               System.out.println( playerItem[currentLocation.getThisLocale().getId()].getName());
+               System.out.println( itemToTake.getName());
 
-                inventory[takenItem] = playerItem[currentLocation.getThisLocale().getId()];
-                takenItem = takenItem + 1;
+                inventory[takenItem] =itemToTake;
+                takenItem += 1;
 
                   playerItem[currentLocation.getThisLocale().getId()].setHasTaken(true);
             }
         }
 
    private static void invt() {
-            System.out.println("You have " + takenItem + "in your inventory" );
+	   int inventorySize = inventory.length;
+            System.out.println("You have " + inventorySize + "in your inventory" );
             System.out.println("Your inventory includes: ");
-       for (int i = 0; i <takenItem; i++) {
+            
+       for (int i = 0; i <inventorySize; i++) {
            System.out.print(i + ":" + inventory[i]);
        }
 
        System.out.println(" ");
    }
+   
+
 
     private static void quit() {
         stillPlaying = false;
