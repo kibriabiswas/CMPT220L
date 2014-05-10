@@ -21,6 +21,8 @@ public class Game {
     public static ShopItem [] ShopInventory = new ShopItem [600]; //Arrays to hold items at the magicshoppe
     public static int takenItem = 0;                // How many items you have
     public static int takenMagicItem = 0;
+    public static Stacks mystack= new Stacks(); 
+    public static Queue myqueue = new Queue(); 
     // Global Location Variables
     public static ListLoc li0=null; 
     public static ListLoc li1=null; 
@@ -148,7 +150,7 @@ public class Game {
 
         Locale loc5 = new Locale(5);
         loc5.setName("Gym");
-        loc5.setDesc("Great place to get fit ");
+        loc5.setDesc("Great place to get fit. ");
         loc5.setNext("You can only go north, south or west.");
 
         Item item5 = new Item(5,"Jacket");
@@ -257,7 +259,19 @@ public class Game {
       
 
         if (currentLocation==null) currentLocation = li0; 
+        try{
+        	mystack.push(currentLocation);
+        }catch (Exception ex){
+        	System.out.println("Stack is full ");
+        }
+       
+       try{
+    	   myqueue.enqueue(currentLocation);
+       }catch (Exception ex){
+    	   System.out.println("Queue is full ");
+       }
 
+        
         final String fileName = "magicitems.txt";
         readMagicItemsFromFile(fileName, lm1);
 
@@ -398,6 +412,18 @@ public class Game {
                 System.out.println("You can't go that way.");
             } else {
                 currentLocation = newLocation;
+                try{
+                	mystack.push(currentLocation);
+                }catch (Exception ex){
+                	System.out.println("Stack is full ");
+                } 
+                try{
+             	   myqueue.enqueue(currentLocation);
+                }catch (Exception ex){
+             	   System.out.println("Queue is full ");
+                }
+
+
                 moves = moves + 1;
                 if (!currentLocation.getThisLocale().getHasVisited())
                 {
@@ -407,7 +433,28 @@ public class Game {
                 }
 
                 achievement = (float)score / moves;
+                if(hasItem("Knife")){
+                	
+                
+                if (currentLocation.getThisLocale().getId()==5) {
+                	Scanner inputReader = new Scanner(System.in);
+                	System.out.println("You are at the gym and you have just found a bottle of protien shake. Do you want to drink it? ");
+                	System.out.println("Please enter Yes or No" );
+                    
+                	
+                	String targetItem = inputReader.nextLine();
+                	if (targetItem.equalsIgnoreCase("Yes")) {
+                		System.out.println("You have won the game!!!");
+                		quit(); 
+               
+                	} else if (targetItem.equalsIgnoreCase("No")){
+                		System.out.println("You have the lost the game");
+            			quit(); 
 
+                }
+                	
+                }
+                }
              // Ask player for an item.
                 if (currentLocation.getThisLocale().getId()==4){
                 	
@@ -498,6 +545,7 @@ public class Game {
 	   int inventorySize = inventory.length;
             System.out.println("You have " + inventorySize + "in your inventory" );
             System.out.println("Your inventory includes: ");
+     
             
        for (int i = 0; i <inventorySize; i++) {
            System.out.print(i + ":" + inventory[i]);
@@ -506,9 +554,63 @@ public class Game {
        System.out.println(" ");
    }
    
+   //Has Item Maze
+   private static boolean hasItem (String target) {
+       boolean isFound = false;
+       int counter=0;
+       Item currentItem = null;
+       while ( (!isFound) && (counter < takenItem ) )
+       {
+           currentItem = inventory[counter];
+           if (currentItem.getName().equalsIgnoreCase(target))
+           {
+               // Item has been found
+               isFound = true;
+           } else
+           {
+               // Item has not been found
+               counter= counter + 1;
+           }
+       }
+       return isFound;
+   }
+   
+   
 
 
-    private static void quit() {
+private static void quit() { 
+    	System.out.println("View the places you have visited backward or foward."); 
+    	Scanner inputReader = new Scanner(System.in);
+        String targetItem = inputReader.nextLine();
+        if (targetItem.equalsIgnoreCase("backward")) {
+        	ListLoc hasVisited = null;
+        	try{
+        		hasVisited = mystack.pop();
+        	
+        	while (hasVisited!=null){
+        		System.out.println(hasVisited.getThisLocale().getName());
+        		hasVisited = mystack.pop();
+        	   }
+        	}catch (Exception ex){
+        		
+        	}
+        } else if (targetItem.equalsIgnoreCase("forward")) {
+            	ListLoc hasVisited = null;
+            	try {
+            		hasVisited = myqueue.dequeue();
+            	while (hasVisited!=null){
+            		System.out.println(hasVisited.getThisLocale().getName());
+            		
+						hasVisited = myqueue.dequeue();
+            	
+					}
+            	
+            	}catch (Exception ex){
+            		
+            	}
+        }
         stillPlaying = false;
-    }
+}
+
+
 }
